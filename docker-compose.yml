@@ -1,0 +1,40 @@
+version: '2'
+services:
+  php-fpm:
+    build: ./docker/php-fpm/
+    restart: unless-stopped
+    links:
+      - mysql:mysql
+    working_dir: /var/www/html
+    volumes:
+     - ./src/:/var/www/html/
+  nginx:
+    build: ./docker/nginx/
+    links:
+     - php-fpm
+    volumes_from:
+     - php-fpm
+    ports:
+     - "80:80"
+  mysql:
+   build: ./docker/mysql/
+   environment:
+     - MYSQL_ROOT_PASSWORD=root
+     - MYSQL_DATABASE=monosolutions
+     - MYSQL_USER=reseller
+     - MYSQL_PASSWORD=password
+   restart: unless-stopped
+   ports:
+     - "3306:3306"
+  phpmyadmin:
+   image: phpmyadmin/phpmyadmin
+   environment:
+     - MYSQL_ROOT_PASSWORD=root
+     - MYSQL_USER=reseller
+     - MYSQL_PASSWORD=password
+     - PMA_HOST=mysql
+   restart: unless-stopped
+   ports:
+     - "8181:80"
+   links:
+     - mysql:mysql
